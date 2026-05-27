@@ -1,0 +1,7 @@
+interface:
+  display_name: "back-to-file 项目流程管理"
+  icon_small: ""
+  brand_color: "#6366F1"
+  default_prompt: "我想开始一个新项目，帮我梳理一下"
+policy:
+  allow_implicit_invocation: true

@@ -1,6 +1,6 @@
 # Back-to-file
 
-一个管理互联网项目开发全流程的 Claude Code Skill。
+一个管理互联网项目开发全流程的 AI 编码助手 Skill，兼容 **Claude Code**、**Codex CLI** 和 **Codex App**。
 
 ## 概述
 
@@ -22,18 +22,35 @@
 - **交叉校验**：每阶段输出自动对齐前序文档，保证一致性
 - **变更追溯**：方案变更通过 Change.md 追溯，新 Agent 可理解上下文
 - **按产品形态自适应**：Web 应用、CLI 工具、静态网站等自动调整阶段划分
+- **跨平台兼容**：同一份 SKILL.md 同时适配 Claude Code 和 Codex CLI
 
 ## 安装
 
-将 `SKILL.md` 放入 Claude Code 的 skills 目录：
+### Claude Code
 
 ```bash
+mkdir -p ~/.claude/skills/back-to-file
 cp SKILL.md ~/.claude/skills/back-to-file/
+```
+
+### Codex CLI
+
+```bash
+mkdir -p ~/.agents/skills/back-to-file
+cp -r . ~/.agents/skills/back-to-file/
+```
+
+### Codex App
+
+将 `AGENTS.md` 复制到项目根目录：
+
+```bash
+cp AGENTS.md /path/to/your/project/AGENTS.md
 ```
 
 ## 使用
 
-在 Claude Code 中说：
+在任何支持的 AI 编码助手中说：
 
 - "我想做个网站"
 - "帮我规划项目"
@@ -41,6 +58,20 @@ cp SKILL.md ~/.claude/skills/back-to-file/
 - "梳理一下这个 idea"
 
 Skill 会自动触发并引导你完成整个流程。
+
+## 文件结构
+
+```
+back-to-file/
+├── SKILL.md          # 主技能文件（Claude Code / Codex CLI）
+├── AGENTS.md         # Codex App 版本
+├── README.md         # 本文件
+├── agents/
+│   └── openai.yaml   # Codex 特定配置
+└── evals/
+    ├── evals.json    # 测试用例
+    └── files/        # 测试用示例文件
+```
 
 ## 许可
 

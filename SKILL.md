@@ -7,6 +7,23 @@ description: 管理互联网项目开发全流程的 Skill，通过六个阶段�
 
 通过分阶段文档管理项目开发流程。每个阶段生成一份 Markdown 文档放在项目根目录，不同 Agent 可以通过读取这些文档了解当前状态并继续推进。
 
+## 多平台适配
+
+此 SKILL.md 兼容以下 AI 编码助手：
+
+| 平台 | 安装路径 | 说明 |
+|------|---------|------|
+| **Claude Code** | `~/.claude/skills/back-to-file/SKILL.md` | 原生支持 SKILL.md |
+| **Codex CLI** | `~/.agents/skills/back-to-file/SKILL.md` | 原生支持 SKILL.md，兼容 Agent Skills 标准 |
+| **Codex App** | 项目根目录 `AGENTS.md` | App 无 SKILL.md 系统，使用仓库内附的 `AGENTS.md`（见本技能目录下的 AGENTS.md） |
+
+**工具调用说明**：本技能的工作流指令使用平台无关的语言描述（如「创建文件」「读取文档」），具体在实现阶段由各平台自动映射到对应工具。Claude Code 使用 `Read`/`Write`/`Edit`/`Bash`，Codex CLI 使用对应等价工具，无需手动区分。
+
+**依赖技能**：阶段五·前端骨架中的视觉 Demo 阶段依赖 **design-taste-frontend**（taste-skill）提供反 slop 设计规则和三旋钮系统。请提前安装：
+```bash
+npx skills add https://github.com/Leonxlnx/taste-skill
+```
+
 ## 触发条件
 
 检测到用户表达以下意图时立即使用此 Skill：
@@ -382,9 +399,104 @@ description: 管理互联网项目开发全流程的 Skill，通过六个阶段�
 
 **对齐 Design.md**：使用的颜色、字体、间距、组件必须与 Design.md 定义一致。
 
-- 用真实布局和内容构建页面，使用 mock/静态数据
-- 不接入真实 API，专注于视觉呈现和页面结构
-- ✅ 验证：页面无报错渲染，响应式布局基本正常，链接可导航
+此阶段使用 **design-taste-frontend**（taste-skill 的反 slop 前端技能）指导视觉实现。执行以下流程：
+
+##### A. Design Read（设计解读）
+开始编码前，输出一行设计解读：
+> **"解读为：[页面类型]，面向[受众]，[风格]语言，倾向[技术栈/设计系统]"**
+
+示例：
+- *"解读为：B2B SaaS Landing Page，面向技术采购者，Linear 风格极简语言，倾向 Tailwind + Geist + 克制动效"*
+- *"解读为：个人作品集首页，面向招聘方和客户，现代极简语言，倾向自定义 CSS + 克制动效"*
+
+如用户需求不明确，只问**一个**澄清问题，不批量提问。
+
+##### B. 三旋钮设定
+根据设计解读设定三个 1-10 旋钮：
+
+| 旋钮 | 说明 | 典型值 |
+|------|------|--------|
+| **DESIGN_VARIANCE** | 1=完全对称 → 10=艺术化非对称 | 个人作品集 6-8 |
+| **MOTION_INTENSITY** | 1=静态 → 10=电影级动效 | 标准 Landing Page 4-7 |
+| **VISUAL_DENSITY** | 1=画廊级留白 → 10=仪表盘级紧凑 | 营销页面 3-5 |
+
+默认基线：`VARIANCE: 7 / MOTION: 6 / DENSITY: 4`
+
+常见场景预设：
+
+| 场景 | VARIANCE | MOTION | DENSITY |
+|------|----------|--------|---------|
+| SaaS Landing Page | 7 | 6 | 4 |
+| 创意机构首页 | 9 | 8 | 3 |
+| 开发者个人作品集 | 6 | 5 | 4 |
+| 设计师个人作品集 | 8 | 7 | 3 |
+| 电商/品牌首页 | 7 | 6 | 3 |
+
+##### C. 设计系统选择
+根据 Design.md 和 Plan.md 选择合适的设计系统基础：
+
+| 项目类型 | 推荐方案 |
+|---------|---------|
+| 现代 SaaS / AI 营销 | Tailwind v4 + shadcn/ui |
+| 企业级 B2B | IBM Carbon / Fluent UI |
+| 极简个人网站 | 自定义 CSS + Tailwind 工具类 |
+| 博客 / 编辑类 | 自定义 CSS，强调排版 |
+| 公共部门 | GOV.UK Frontend / USWDS |
+
+##### D. 反 AI Slop 规则
+视觉 Demo 必须遵循以下约束（来自 taste-skill）：
+
+**布局：**
+- 避免默认的居中 Hero + 紫色渐变（如非品牌要求）
+- 禁止三张等宽功能卡并列
+- 禁止 `h-screen`（用 `min-h-[100dvh]`）
+- 禁止使用 em-dash（`—`），全部用普通连字符（`-`）
+- Hero 必须在首屏完整可见，标题 ≤ 2 行，副文本 ≤ 20 词
+- CTA 按钮文字必须在桌面端单行显示
+
+**字体：**
+- 避免 Inter 作为默认字体。优先 Geist、Satoshi、Instrument Sans 等
+- 展示/标题字重用 `tracking-tighter leading-none`
+- 正文字重用 `leading-relaxed max-w-[65ch]`
+
+**色彩：**
+- 最多 1 个强调色，饱和度 < 80%
+- 避免 AI 默认的紫色/蓝色渐变
+- 全页保持单一强调色，不混用
+
+**卡片与间距：**
+- 卡片只在使用层级时使用，否则用 `border-t` / `divide-y` 分组
+- 圆角体系全页统一（全锐/全圆/全柔和，选一种）
+- Hero 不接受纯文字 + 渐变色块——必须有真实视觉元素
+
+**动效（MOTION_INTENSITY > 3 时）：**
+- 只动 `transform` 和 `opacity`，不动 top/left/width/height
+- 必须尊重 `prefers-reduced-motion`
+- 禁止 `window.addEventListener('scroll')`
+- 滚动触发动画使用 IntersectionObserver 或 CSS `animation-timeline`
+
+##### E. 实现
+用真实布局和 mock/静态数据构建页面：
+- 不接入真实 API
+- ✅ 验证：页面无报错渲染，响应式布局正常，链接可导航
+
+##### F. 预检清单（Pre-Flight Check）
+交付前逐项检查：
+
+- [ ] 设计解读已声明（步骤 A）
+- [ ] 旋钮值与需求匹配（步骤 B）
+- [ ] 无 AI 默认色（紫/蓝渐变）
+- [ ] 无 em-dash
+- [ ] 全页色彩一致性锁定
+- [ ] 全页圆角体系一致性锁定
+- [ ] Hero 首屏完整可见，CTA 无需滚动
+- [ ] CTA 按钮文字在桌面端不换行
+- [ ] Hero 文本元素 ≤ 4 个（eyebrow/标题/副文本/CTA）
+- [ ] CTA 无重复意图（同一页面不同位置的 CTA 文案一致）
+- [ ] 动效尊重 `prefers-reduced-motion`
+- [ ] 导航单行显示，高度 ≤ 80px
+- [ ] 响应式检查：768px 断点布局正常
+- [ ] Z-index 有层次管理，不随意使用 z-50
 
 **对齐校验：视觉 Demo → Design.md**
 - 页面使用的全部色彩值是否在 Design.md 的 tokens 范围内？
@@ -647,7 +759,7 @@ description: 管理互联网项目开发全流程的 Skill，通过六个阶段�
 
 ## 工具使用
 
-- 使用 **Read** 读取已有文档
-- 使用 **Write** 创建或覆盖文档（覆盖时记得记录 Change.md）
-- 使用 **Edit** 对已有文档进行小幅修改
-- 使用 **Bash** 检查项目根目录的文件状态
+- 平台自动提供标准的**文件读写能力**（读、写、编辑、执行命令），无需在实现中指定具体工具名
+- 使用 `ls` 或平台自带命令检查项目根目录的文件状态
+- 生成文档时直接描述要创建的文件内容，平台会自动执行写入操作
+- 记录 Change.md 时同理
