@@ -1,6 +1,8 @@
 # Back-to-file
 
-一个管项目开发全流程的 AI 编码助手 Skill，兼容 **Claude Code**、**Codex CLI** 和 **Codex App**。
+一个管理互联网项目开发全流程的 AI 编码助手 Skill，兼容所有 Agent Skills 标准运行时（Claude Code · Codex CLI · Codex App 等）。
+
+> **一键安装**：`npx skills add back-to-file`（自动检测运行环境）
 
 ## 概述
 

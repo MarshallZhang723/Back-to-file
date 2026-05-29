@@ -7,19 +7,30 @@ description: 管理互联网项目开发全流程的 Skill，通过六个阶段�
 
 通过分阶段文档管理项目开发流程。每个阶段生成一份 Markdown 文档放在项目根目录，不同 Agent 可以通过读取这些文档了解当前状态并继续推进。
 
-## 多平台适配
+## 运行时兼容性
 
-此 SKILL.md 兼容以下 AI 编码助手：
+此 SKILL.md 兼容所有支持 Agent Skills 标准的 AI 编码助手。
 
-| 平台 | 安装路径 | 说明 |
-|------|---------|------|
-| **Claude Code** | `~/.claude/skills/back-to-file/SKILL.md` | 原生支持 SKILL.md |
-| **Codex CLI** | `~/.agents/skills/back-to-file/SKILL.md` | 原生支持 SKILL.md，兼容 Agent Skills 标准 |
-| **Codex App** | 项目根目录 `AGENTS.md` | App 无 SKILL.md 系统，使用仓库内附的 `AGENTS.md`（见本技能目录下的 AGENTS.md） |
+### 安装方式
 
-**工具调用说明**：本技能的工作流指令使用平台无关的语言描述（如「创建文件」「读取文档」），具体在实现阶段由各平台自动映射到对应工具。Claude Code 使用 `Read`/`Write`/`Edit`/`Bash`，Codex CLI 使用对应等价工具，无需手动区分。
+**一键安装**（推荐，自动检测运行环境）：
+```bash
+npx skills add back-to-file
+```
 
-**依赖技能**：阶段五·前端骨架中的视觉 Demo 阶段依赖 **design-taste-frontend**（taste-skill）提供反 slop 设计规则和三旋钮系统。请提前安装：
+**手动安装**：根据你的平台选择对应路径：
+
+| 平台 | 安装路径 |
+|------|---------|
+| Claude Code | `~/.claude/skills/back-to-file/SKILL.md` |
+| Codex CLI | `~/.agents/skills/back-to-file/SKILL.md` |
+| Codex App | 项目根目录 `AGENTS.md` |
+
+> Codex App 无内置 SKILL.md 系统，使用仓库内附的 `AGENTS.md`（见本技能目录下的 AGENTS.md）
+
+**工具调用说明**：本技能的工作流指令使用平台无关的语言描述（如「创建文件」「读取文档」），具体在实现阶段由各平台自动映射到对应工具。无需手动区分平台命令。
+
+**依赖技能**：阶段五·前端骨架中的视觉 Demo 阶段依赖 **design-taste-frontend**（taste-skill）提供反 slop 设计规则和三旋钮系统：
 ```bash
 npx skills add https://github.com/Leonxlnx/taste-skill
 ```
