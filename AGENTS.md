@@ -27,7 +27,7 @@ Concept.md → Plan.md → Project.md → Task.md → 实际代码 → Summary.m
 跟踪实施进度，状态分 ⬜ 未开始 / 🔄 进行中 / ✅ 已完成。
 
 ### 阶段五：实现执行
-按：**设计系统(Design.md) → 视觉Demo → 数据模型(DataModel.md) → API设计(API.md) → 业务逻辑 → 交互集成 → 部署**
+按：**视觉Demo → 设计系统(Design.md) → 数据模型(DataModel.md) → API设计(API.md) → 业务逻辑 → 交互集成 → 部署**
 
 ### 阶段六：项目总结 → Summary.md
 记录完成情况、关键决策和经验总结。
