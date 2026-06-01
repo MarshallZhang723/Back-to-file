@@ -12,7 +12,7 @@
 2. **项目规划** → Plan.md
 3. **实施拆分** → Project.md
 4. **任务跟踪** → Task.md
-5. **实现执行** → Design.md / DataModel.md / API.md + 实际代码
+5. **实现执行** → 视觉 Demo → Design.md（反向提炼）/ DataModel.md / API.md + 实际代码
 6. **项目总结** → Summary.md
 
 每个阶段生成一份 Markdown 文档放在项目根目录，不同 Agent 可以通过读取这些文档了解当前状态并继续推进。
