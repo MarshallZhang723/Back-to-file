@@ -30,7 +30,12 @@ npx skills add back-to-file
 
 **工具调用说明**：本技能的工作流指令使用平台无关的语言描述（如「创建文件」「读取文档」），具体在实现阶段由各平台自动映射到对应工具。无需手动区分平台命令。
 
-**依赖技能**：阶段五·前端骨架中的视觉 Demo 阶段依赖 **design-taste-frontend**（taste-skill）提供反 slop 设计规则和三旋钮系统：
+**依赖技能**：阶段五·前端骨架依赖以下内置技能：
+- **impeccable** — 信息布局排版（layout/typeset 指令）、视觉色彩搭配（colorize/critique 指令）、动效质量审查（animate/polish 指令）
+- **design-taste-frontend**（taste-skill）— 反 slop 设计规则和三旋钮系统
+- **gsap-core**、**gsap-scrolltrigger**、**gsap-timeline**、**gsap-react**、**gsap-performance** — 交互动效实现
+
+taste-skill 为需额外安装的外部技能：
 ```bash
 npx skills add https://github.com/Leonxlnx/taste-skill
 ```
@@ -74,9 +79,17 @@ npx skills add https://github.com/Leonxlnx/taste-skill
     ▼
 阶段五：实现执行
     ├── 5.1 前端（界面骨架）
-    │   ├── 视觉 Demo/原型（真实布局 + mock 数据）
+    │   ├── 5.1.1 信息布局排版（布局骨架 + 内容结构 + 排版系统）
+    │   │  │  ← 技能：impeccable（layout / typeset 指令）
     │   │  ← 🛑 STOP：展示进展 → 请求确认 → 等待指令
-    │   └── Design.md（设计系统规范）→ 从 Demo 反向提炼
+    │   ├── 5.1.2 视觉色彩搭配（调色板 + 主题色 + 圆角 + 无障碍）
+    │   │  │  ← 技能：impeccable（colorize / critique 指令）
+    │   │  ← 🛑 STOP：展示进展 → 请求确认 → 等待指令
+    │   ├── 5.1.3 交互动效（过渡动画 + 滚动动效 + 序列编排）
+    │   │  │  ← 技能：gsap-core + gsap-scrolltrigger + gsap-timeline（实现）
+    │   │  │  ← 技能：impeccable（animate / polish 指令，审查质量）
+    │   │  ← 🛑 STOP：展示进展 → 请求确认 → 等待指令
+    │   └── 5.1.4 Design.md（设计系统规范）→ 从前三步反向提炼
     │      ← 🛑 STOP：展示文档 → 请求确认 → 等待指令
     ├── 5.2 后端
     │   ├── DataModel.md（数据模型）
@@ -232,8 +245,10 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 
 ### 阶段一：前端（界面骨架）
 - **任务列表**：
-  - [ ] 视觉 Demo/原型（真实布局 + mock 数据）
-  - [ ] 设计系统规范——Design.md（从 Demo 反向提炼 tokens/组件/规范）
+  - [ ] 信息布局排版（布局骨架 + 内容结构 + 排版系统）
+  - [ ] 视觉色彩搭配（调色板 + 主题色 + 圆角 + 无障碍）
+  - [ ] 交互动效（过渡 + 滚动动效 + 序列编排）
+  - [ ] 设计系统规范——Design.md（从前三步反向提炼 tokens/组件/规范）
 - **交付结果**：<!-- 前端界面骨架完成，静态页面可浏览 -->
 - **验收标准**：<!-- 页面渲染正常，Design.md 一致反映 Demo 中的设计 -->
 
@@ -260,7 +275,7 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 ```
 
 - 根据 Plan.md 中的产品形态做适应性调整。例如 CLI 工具可跳过前端阶段（只需后端 + 部署），静态网站可跳过后端阶段（只需前端骨架 + 部署，无交互集成）。
-- **简化模板**：对于落地页/品牌官网等简单前端项目（页面少、无复杂交互、无复用组件），可直接省略 Design.md 反向提炼步骤，视觉 Demo 即为最终设计参考。样式和组件规范在后续实现中按需确定即可。
+- **简化模板**：对于落地页/品牌官网等简单前端项目（页面少、无复杂交互、无复用组件），可直接省略 Design.md 反向提炼步骤，前三个子步骤的产出即为最终设计参考。样式和组件规范在后续实现中按需确定即可。
 - 每个阶段应该是逻辑上自洽的工作单元，可以独立交付和验收。
 - 任务粒度要适中：一个任务应可在 1-3 天内完成。
 - 阶段之间如有依赖关系，需明确标注。
@@ -342,10 +357,10 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 1. **读取 Project.md** 获取阶段划分和各阶段的任务列表，确定产品形态
 2. **根据 Project.md 定义的阶段顺序逐一实现**，典型 Web 项目按 前端（骨架）→ 后端 → 前端（交互集成）→ 部署 的顺序。具体阶段以 Project.md 为准（静态网站按 前端骨架 → 部署 两阶段执行；CLI 工具按 后端 → 部署 两阶段执行）
 3. **项目初始化**：进入第一个代码实现子步骤前，先初始化实际项目——创建项目目录、运行框架脚手架命令、安装依赖、初始化 git 仓库。如项目根目录已有项目代码或配置文件，跳过此步骤。
-4. **需要规范文档的子步骤**（如存在：设计系统规范→Design.md（从 Demo 反向提炼）、数据模型→DataModel.md、API 设计→API.md）：
-   - 对于设计系统规范（Design.md）：先完成视觉 Demo（见下方"代码实现优先"规则），再从 Demo 反向提炼 Design.md
+4. **需要规范文档的子步骤**（如存在：设计系统规范→Design.md（从前三阶段反向提炼）、数据模型→DataModel.md、API 设计→API.md）：
+   - 对于设计系统规范（Design.md）：先完成信息布局排版、视觉色彩搭配、交互动效三个子步骤，再从三者的产出反向提炼 Design.md
    - 对于数据模型（DataModel.md）和 API 设计（API.md）：首先生成对应的**规范文档**，请求用户确认，用户确认后进入该子步骤的**代码实现**
-   - 其他子步骤（视觉 Demo、交互集成、CI/CD、上线）无需前置规范文档，直接进入代码实现
+   - 其他子步骤（信息布局排版、视觉色彩搭配、交互动效、交互集成、CI/CD、上线）无需前置规范文档，直接进入代码实现
 5. **每个 Task 完成后**：
    - 更新 Task.md 中的任务状态（⬜ → ✅ 或 🔄）并追加实施日志
    - 执行对应产品形态的验证（见下方验证策略表）
@@ -365,17 +380,16 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 
 先完成界面骨架（静态页面 + 规范），不依赖后端 API。交互实现在后端完成后单独进行（见 5.3）。
 
-按照 **视觉 Demo/原型 → Design.md（设计系统规范）** 的顺序执行。先做视觉产出，再从 Demo 反向提炼设计系统规范文档。
+按照 **信息布局排版 → 视觉色彩搭配 → 交互动效 → Design.md（设计系统规范）** 的顺序执行。前三个阶段依次构建页面的布局结构、视觉风格和动效体验，每阶段完成后反向提炼到最终的设计系统规范文档。
 
 ---
 
-#### 5.1.1 视觉 Demo/原型
+#### 5.1.1 信息布局排版
 
-**目标**：基于 Plan.md 快速产出视觉原型，用真实布局和 mock 数据构建页面。
-
-此阶段使用 **design-taste-frontend**（taste-skill 的反 slop 前端技能）指导视觉实现。执行以下流程：
+**目标**：基于 Plan.md 构建页面布局骨架和排版系统。聚焦内容结构、网格系统、排版层级和间距节奏。此阶段使用 **impeccable** 技能（layout / typeset 指令）和 **design-taste-frontend**（taste-skill）指导布局设计与实现。
 
 ##### A. Design Read（设计解读）
+
 开始编码前，输出一行设计解读：
 > **"解读为：[页面类型]，面向[受众]，[风格]语言，倾向[技术栈/设计系统]"**
 
@@ -386,6 +400,7 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 如用户需求不明确，只问**一个**澄清问题，不批量提问。
 
 ##### B. 三旋钮设定
+
 根据设计解读设定三个 1-10 旋钮：
 
 | 旋钮 | 说明 | 典型值 |
@@ -407,6 +422,7 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 | 电商/品牌首页 | 7 | 6 | 3 |
 
 ##### C. 设计系统选择
+
 根据 Plan.md 选择合适的设计系统基础：
 
 | 项目类型 | 推荐方案 |
@@ -417,76 +433,221 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 | 博客 / 编辑类 | 自定义 CSS，强调排版 |
 | 公共部门 | GOV.UK Frontend / USWDS |
 
-##### D. 反 AI Slop 规则
-视觉 Demo 必须遵循以下约束（来自 taste-skill）：
+##### D. 布局排版规则
 
-**布局：**
+此阶段聚焦信息布局和排版，遵循以下规则（参考 impeccable 的 layout / typeset 指令）：
+
+**布局规范（调用 impeccable /layout [target] 指令辅助设计）：**
+- 变化间距创造节奏感，避免等距重复
+- Flexbox 用于一维布局，Grid 用于二维布局
+- 无断点自适应网格：`repeat(auto-fit, minmax(280px, 1fr))`
+- 构建语义化的 z-index 层级（dropdown → sticky → modal-backdrop → modal → toast → tooltip）
 - 避免默认的居中 Hero + 紫色渐变（如非品牌要求）
 - 禁止三张等宽功能卡并列
 - 禁止 `h-screen`（用 `min-h-[100dvh]`）
-- 禁止使用 em-dash（`—`），全部用普通连字符（`-`）
+- 卡片只在使用层级时使用，否则用 `border-t` / `divide-y` 分组
 - Hero 必须在首屏完整可见，标题 ≤ 2 行，副文本 ≤ 20 词
 - CTA 按钮文字必须在桌面端单行显示
-
-**字体：**
-- 避免 Inter 作为默认字体。优先 Geist、Satoshi、Instrument Sans 等
-- 展示/标题字重用 `tracking-tighter leading-none`
-- 正文字重用 `leading-relaxed max-w-[65ch]`
-
-**色彩：**
-- 最多 1 个强调色，饱和度 < 80%
-- 避免 AI 默认的紫色/蓝色渐变
-- 全页保持单一强调色，不混用
-
-**卡片与间距：**
-- 卡片只在使用层级时使用，否则用 `border-t` / `divide-y` 分组
-- 圆角体系全页统一（全锐/全圆/全柔和，选一种）
 - Hero 不接受纯文字 + 渐变色块——必须有真实视觉元素
+- 导航单行显示，高度 ≤ 80px
 
-**动效（MOTION_INTENSITY > 3 时）：**
-- 只动 `transform` 和 `opacity`，不动 top/left/width/height
-- 必须尊重 `prefers-reduced-motion`
-- 禁止 `window.addEventListener('scroll')`
-- 滚动触发动画使用 IntersectionObserver 或 CSS `animation-timeline`
+**排版规范（调用 impeccable /typeset [target] 指令辅助设计）：**
+- 正文字宽限制在 65-75ch，使用 `max-w-[65ch]`
+- 层级通过字号 + 字重对比实现，步进比例 >= 1.25
+- 字体家族最多 3 种（展示体 + 正文 + 等宽）
+- 避免 Inter 作为默认字体。优先 Geist、Satoshi、Instrument Sans 等
+- 展示/标题字使用 `tracking-tighter leading-none`，展示字号 clamp 上限 <= 6rem
+- h1-h3 使用 `text-wrap: balance`，长散文使用 `text-wrap: pretty`
+- 禁止正文全大写；大写仅限短标签（<= 4 词）、section eyebrows 和徽章
+- 展示标题 `letter-spacing` 下限 >= -0.04em
+- 禁止使用 em-dash（`—`），全部用普通连字符（`-`）
+- 禁止格言式节奏的正文字体作为默认语气
 
 ##### E. 实现
-用真实布局和 mock/静态数据构建页面：
+
+用真实布局和 mock/静态数据构建页面布局骨架：
 - 不接入真实 API
+- 此阶段以布局和排版为主，色彩使用中性色（灰阶）占位，动效留到 5.1.3
 - ✅ 验证：页面无报错渲染，响应式布局正常，链接可导航
 
 ##### F. 预检清单（Pre-Flight Check）
+
 交付前逐项检查：
 
 - [ ] 设计解读已声明（步骤 A）
 - [ ] 旋钮值与需求匹配（步骤 B）
-- [ ] 无 AI 默认色（紫/蓝渐变）
+- [ ] 无三张等宽功能卡并列
 - [ ] 无 em-dash
-- [ ] 全页色彩一致性锁定
-- [ ] 全页圆角体系一致性锁定
+- [ ] 无 h-screen（已使用 min-h-[100dvh]）
 - [ ] Hero 首屏完整可见，CTA 无需滚动
 - [ ] CTA 按钮文字在桌面端不换行
 - [ ] Hero 文本元素 ≤ 4 个（eyebrow/标题/副文本/CTA）
-- [ ] CTA 无重复意图（同一页面不同位置的 CTA 文案一致）
-- [ ] 动效尊重 `prefers-reduced-motion`
 - [ ] 导航单行显示，高度 ≤ 80px
+- [ ] 正文字宽限制在 65-75ch
+- [ ] 展示标题 clamp 上限 ≤ 6rem
 - [ ] 响应式检查：768px 断点布局正常
 - [ ] Z-index 有层次管理，不随意使用 z-50
+- [ ] 布局间距有节奏变化，非等距重复
 
-**对齐校验：视觉 Demo → Plan.md**
-- Demo 的布局和页面结构是否与 Plan.md 中的页面/界面结构一致？
+**对齐校验：信息布局排版 → Plan.md**
+- 布局和页面结构是否与 Plan.md 中的页面/界面结构一致？
 - 技术选型是否与 Plan.md 一致？
 
-完成后输出进展给用户确认。提示：「请确认视觉 Demo。确认后进入设计系统规范阶段，从 Demo 反向提炼 Design.md。」
-
-**后续约束**：此 Demo 将成为 Design.md 反向提炼的唯一依据。5.3 交互集成需对齐后续生成的 Design.md。
+完成后输出进展给用户确认。提示：「请确认布局排版效果。确认后进入视觉色彩搭配阶段。」
 
 ---
 
-#### 5.1.2 设计系统规范 → Design.md（从 Demo 反向提炼）
+#### 5.1.2 视觉色彩搭配
 
-**目标**：基于已完成的视觉 Demo，反向提炼设计系统规范文档，作为后续前端实现的参照标准。
+**目标**：在上一步布局骨架的基础上，为页面添加色彩体系、圆角系统和视觉风格。此阶段使用 **impeccable** 技能（colorize / critique 指令）指导色彩设计和视觉质量。
 
-**对齐 Demo**：Design.md 中定义的 tokens 和组件规范必须与 Demo 中实际使用的样式完全一致。不得引入 Demo 中未出现的设计元素。
+##### A. 色彩体系（调用 impeccable /colorize [target] 指令辅助设计）
+
+遵循以下色彩规则（参考 impeccable 的色彩指南）：
+
+- 正文文本与背景的对比度 >= **4.5:1**；大号文本（>= 18px 或粗体 >= 14px）>= **3:1**
+- 使用 **OKLCH** 色域构建调色板
+- 全部色彩体系基于 1 个品牌色展开：
+  - 最多 1 个强调色，饱和度 < 80%
+  - 避免 AI 默认的紫色/蓝色渐变
+  - 全页保持单一强调色，不混用
+- 灰色文字放在彩色背景上时，应使用背景色本身的深色调或透明度，而非纯灰色
+- 避免 cream/sand/beige 暖中性背景色（2025 饱和 AI 默认值），从品牌色出发选择真正的近白色或深中色调
+
+##### B. 圆角与视觉统一
+
+- 圆角体系全页统一：全锐 / 全圆 / 全柔和，选择一种
+- 圆角刻度：小/中/大/全圆，一致性锁定
+- 阴影层级：卡片/下拉/弹窗，全页统一
+
+##### C. 页面精化（调用 impeccable /polish 指令审查质量）
+
+交付前可通过 impeccable 的 critique 或 polish 指令进行视觉质量审查。
+
+##### D. 实现
+
+在上一步的布局骨架基础上叠加色彩和视觉风格：
+- 不使用 em-dash（`—`）
+- 不接入真实 API
+- ✅ 验证：色彩对比度达标，视觉风格统一
+
+##### E. 预检清单（Pre-Flight Check）
+
+交付前逐项检查：
+
+- [ ] 无 AI 默认色（紫/蓝渐变）
+- [ ] 全页色彩一致性锁定（仅用一种强调色）
+- [ ] 全页圆角体系一致性锁定
+- [ ] 正文对比度 >= 4.5:1
+- [ ] 强调色饱和度 < 80%
+- [ ] 无暖中性背景色（cream/sand/beige）作为默认
+- [ ] CTA 无重复意图（同一页面不同位置的 CTA 文案一致）
+- [ ] 链接文本独立可理解（"View pricing plans" 优于 "Click here"）
+- [ ] 禁止侧条纹边框、渐变文字、毛玻璃默认装饰
+- [ ] 无 hero-metric template（大数字/小标签/统计数据的 SaaS 陈词滥调）
+- [ ] 无编号的 section 标记（01/02/03）
+- [ ] 每个 section 上方无小号全大写 eyebrow（如非品牌必要）
+
+**对齐校验：视觉色彩搭配 → 信息布局排版**
+- 色彩和视觉风格的添加是否改变了上一步确定的布局结构和层级？
+- 色彩是否增强了信息层级而非干扰？
+
+完成后输出进展给用户确认。提示：「请确认视觉色彩效果。确认后进入交互动效阶段。」
+
+---
+
+#### 5.1.3 交互动效
+
+**目标**：在前两步的基础上添加交互动效。此阶段使用 **GSAP** 系列技能实现动效，使用 **impeccable** 技能（animate / polish 指令）审查动效质量。
+
+##### A. 动效实现（调用 GSAP 技能）
+
+根据 MOTION_INTENSITY 旋钮值决定动效强度：
+
+**MOTION_INTENSITY = 1-3（静态/轻度）：**
+- 仅在 hover/focus 时使用 CSS transition
+- 无需 JS 动效框架
+
+**MOTION_INTENSITY = 4-7（中等动效，推荐 Landing Page）：**
+使用 **gsap-core** 技能实现基础动效：
+- `gsap.from()` — 元素入场动画（淡入、位移）
+- `gsap.to()` — 状态过渡动画
+- 缓动函数：优先指数缓出（power2.out / power3.out）
+- `stagger` — 列表元素交错入场
+- `autoAlpha` — 结合 opacity + visibility 的入场
+
+使用 **gsap-scrolltrigger** 技能实现滚动驱动动效（仅 Landing Page 和长页面场景）：
+- `ScrollTrigger` — 滚动到可视区域时触发动画
+- `scrub` — 动画进度绑定滚动位置
+- `pin` — 区块固定效果
+- 需要在 tween/timeline 上配置 ScrollTrigger，不在子动画上配置
+
+使用 **gsap-timeline** 技能编排多步序列动画：
+- `gsap.timeline()` — 按顺序执行多个动画
+- 位置参数（`+=`/`-=`/`<`/`>`）控制重叠与延迟
+- 嵌套时间线管理复杂场景
+
+**React 项目**：额外使用 **gsap-react** 技能：
+- `useGSAP()` hook 替代 useEffect
+- `scope` 参数限定选择器作用域
+- `contextSafe()` 包装事件回调中的动画
+- 自动清理（组件卸载时回带动画）
+
+**性能优化**（参考 **gsap-performance** 技能）：
+- 只动 `transform` 和 `opacity`，不动 top/left/width/height
+- 大量元素动画时使用 `stagger`
+- 高频更新使用 `gsap.quickTo()`
+
+##### B. 动效质量审查（调用 impeccable 指令）
+
+调用 **impeccable /animate [target]** 指令审查动效质量：
+- 动效应是刻意的，不能事后才考虑
+- 缓出曲线使用指数曲线（ease-out-quart / quint / expo），不弹跳，不弹性
+- 入场动画必须增强已可见的默认状态，不要将内容可见性依赖于类触发的过渡
+- 列表内交错合理，每个入场效果与其揭示的内容匹配
+- 禁止 `window.addEventListener('scroll')`
+
+调用 **impeccable /polish [target]** 指令进行发布前最终审查。
+
+##### C. 无障碍动效
+
+必须尊重 `prefers-reduced-motion`：
+- 使用 `@media (prefers-reduced-motion: reduce)` 提供替代方案
+- 使用 `gsap.matchMedia()`（GSAP 3.11+）统一管理响应式和动效偏好
+- 减少动效不是可选的——每个动画都需要替代方案
+
+##### D. 实现
+
+在前两步已完成布局和配色的页面上叠加动效：
+- 不接入真实 API
+- ✅ 验证：动效流畅（60fps），animated 元素在无动效状态下仍可见且可用
+
+##### E. 预检清单（Pre-Flight Check）
+
+交付前逐项检查：
+
+- [ ] 动效只驱动 transform 和 opacity
+- [ ] 动效尊重 `prefers-reduced-motion`
+- [ ] 无 `window.addEventListener('scroll')`
+- [ ] 缓动使用指数曲线（power2.out / power3.out），无弹跳
+- [ ] 入场动画不依赖类触发的过渡（增强默认状态）
+- [ ] 滚动触发动画使用 ScrollTrigger 而非手动 scroll 事件
+- [ ] 动效 60fps 流畅
+- [ ] React 项目使用了 useGSAP hook 和 context 自动清理
+
+**对齐校验：交互动效 → 信息布局排版 + 视觉色彩搭配**
+- 动效是否改变了前两步确定的布局结构和色彩关系？
+- 入场动画在 JS 未加载或无动效状态下是否仍可见？
+
+完成后输出进展给用户确认。提示：「请确认动效效果。确认后进入设计系统规范阶段，从前三步的产出反向提炼 Design.md。」
+
+---
+
+#### 5.1.4 设计系统规范 → Design.md（从前三步反向提炼）
+
+**目标**：基于已完成的 信息布局排版、视觉色彩搭配、交互动效 三个子步骤的产出，反向提炼设计系统规范文档，作为后续前端实现的参照标准。
+
+**对齐前三步**：Design.md 中定义的 tokens 和组件规范必须与前三个子步骤中实际使用的样式完全一致。不得引入前三步中未出现的设计元素。
 
 **生成 Design.md**，包含以下内容：
 
@@ -499,7 +660,7 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 - **间距**：间距刻度（4px 基准）、内边距/外边距规则
 - **阴影**：层级（卡片/下拉/弹窗）
 - **圆角**：刻度（小/中/大/全圆）
-- **动画**：缓动函数、持续时间
+- **动画**：缓动函数、持续时间（参考 gsap-core 技能）
 
 ## 组件库
 - **基础组件**：Button、Input、Select、Card、Modal、Tag、Toast 等
@@ -513,19 +674,18 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 - 图标风格、来源（如 lucide-react 等）
 ```
 
-**对齐校验：Design.md → 视觉 Demo**
-- Design.md 中的所有色彩值是否能在 Demo 中找到对应使用？
-- 组件定义是否准确反映了 Demo 中实际使用的组件样式和变体？
-- 间距、圆角、阴影刻度是否严格对应 Demo 中的实际值？
-- 是否有 Demo 中未使用的设计元素被错误地添加到 Design.md 中？
+**对齐校验：Design.md → 前三步的产出**
+- Design.md 中的所有色彩值是否能在 5.1.2（视觉色彩搭配）中找到对应使用？
+- 组件定义是否准确反映了前三步中实际使用的组件样式和变体？
+- 间距、圆角、阴影刻度是否严格对应 5.1.1（信息布局排版）中的实际值？
+- 动画 tokens 是否与 5.1.3（交互动效）中使用的 GSAP 缓动和持续时间一致？
+- 是否有前三步中未使用的设计元素被错误地添加到 Design.md 中？
 
-如发现 Demo 与 Design.md 不一致，以 Demo 为准更新 Design.md（记录 Change.md）。
+如发现与前三步产出不一致，以实际代码为准更新 Design.md（记录 Change.md）。
 
 完成后输出文档给用户确认。提示：「请确认 Design.md 的设计规范。确认后进入下一阶段。」
 
 **后续约束**：5.3 交互集成需对齐 Design.md。
-
----
 
 ### 5.2 后端实现
 
@@ -825,6 +985,12 @@ npx skills add https://github.com/Leonxlnx/taste-skill
 | 技能 | 用途 | 安装方式 |
 |------|------|---------|
 | `design-taste-frontend`（taste-skill） | 反 slop 视觉设计规则 + 三旋钮系统 | `npx skills add https://github.com/Leonxlnx/taste-skill` |
+| **impeccable** | 信息布局排版（layout/typeset）、视觉色彩搭配（colorize/critique）、动效质量审查（animate/polish） | 内置技能 |
+| **gsap-core** | 基础动效实现（to/from/fromTo、缓动、stagger） | 内置技能 |
+| **gsap-scrolltrigger** | 滚动驱动动效（ScrollTrigger、pinning、scrub） | 内置技能 |
+| **gsap-timeline** | 动画序列编排（timeline、位置参数） | 内置技能 |
+| **gsap-react** | React 项目动效集成（useGSAP hook、context 清理） | 内置技能 |
+| **gsap-performance** | 动效性能优化（quickTo、transform 优先） | 内置技能 |
 
 ## 测试资源
 
