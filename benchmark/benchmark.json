@@ -1,0 +1,1100 @@
+{
+  "meta": {
+    "skill_name": "back-to-file",
+    "benchmark_version": "1.0",
+    "created": "2026-06-07",
+    "description": "back-to-file Skill 的 Benchmark 测试体系，支持版本间对比（当前版/压缩版/后续版/不使用skill版本）",
+    "total_scenarios": 28,
+    "categories": {
+      "happy-path": { "count": 5, "label": "Happy Path", "description": "标准流程测试，验证核心功能正常执行" },
+      "state-machine": { "count": 8, "label": "State Machine", "description": "阶段检测与转换准确性测试" },
+      "recovery": { "count": 5, "label": "Recovery", "description": "中断恢复和异常恢复测试" },
+      "failure": { "count": 5, "label": "Failure", "description": "错误检测和矛盾处理测试" },
+      "guardrail": { "count": 5, "label": "Guardrail", "description": "安全护栏和合规性测试" }
+    }
+  },
+
+  "dimensions": {
+    "task_success": {
+      "label": "Task Success Rate",
+      "weight": 0.30,
+      "description": "任务完成度，输出与预期结果的匹配程度",
+      "scale": "0.0-1.0 per scenario, weighted by scenario type"
+    },
+    "state_machine": {
+      "label": "State Machine Accuracy",
+      "weight": 0.20,
+      "description": "阶段识别和转换的准确性",
+      "scale": "0.0-1.0 per scenario, averaged"
+    },
+    "guardrail": {
+      "label": "Guardrail Compliance",
+      "weight": 0.15,
+      "description": "安全护栏规则的遵守程度（STOP 门、确认请求、Change.md 记录等）",
+      "scale": "0.0-1.0 per scenario, averaged"
+    },
+    "recovery": {
+      "label": "Recovery Accuracy",
+      "weight": 0.15,
+      "description": "中断恢复和异常处理的正确性",
+      "scale": "0.0-1.0 per scenario, averaged"
+    },
+    "token_usage": {
+      "label": "Token Usage Efficiency",
+      "weight": 0.10,
+      "description": "完成场景所需的 token 数量效率",
+      "scale": "Baseline-normalized: baseline_tokens / actual_tokens, capped at 1.0"
+    },
+    "latency": {
+      "label": "Latency",
+      "weight": 0.10,
+      "description": "场景完成时间",
+      "scale": "Baseline-normalized: baseline_time / actual_time, capped at 1.0"
+    }
+  },
+
+  "scenarios": [
+    {
+      "id": "HP-01",
+      "name": "完整概念创建（全量输入）",
+      "category": "happy-path",
+      "description": "用户提供完整 6 个问题的答案，Agent 应直接创建 Concept.md",
+      "run_mode": "single_prompt",
+      "prompt": "我想做一个个人记账网站，帮我开始这个项目。下面是我的完整想法，可以直接帮我创建项目概念文档：\n\n- **动机**：我工作快三年了，每个月薪水不少但就是存不下钱，月底总搞不清钱花哪了。想通过记账搞清楚消费习惯。\n- **要解决的问题**：记账太麻烦，手动分类费时间，月底对账痛苦，不知道钱都花在哪些类别上了。\n- **解决方案**：一个极简的网页记账工具，手机电脑都能用。核心是快速记账（30秒内完成一笔）和每月自动生成分类消费报表。\n- **为什么这样解决**：用过复杂的记账软件，发现最需要的不是功能多，而是能坚持记。越简单越容易坚持。\n- **竞品分析**：用过随手记和 MoneyWiz，功能太多太复杂，对只是想简单记账的人来说门槛太高。挖财也试过，广告太多体验不好。\n- **深层洞察**：记账工具最大的门槛不是功能不够，而是记录成本太高。所以这个工具追求极致简单——打开即记，不需要分类、不需要预算、不需要标签。\n\n这些信息够全面了，你直接开始吧。",
+      "files": [],
+      "dimension_weights": {
+        "task_success": 0.6,
+        "state_machine": 0.2,
+        "guardrail": 0.2,
+        "recovery": 0.0,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "创建 Concept.md，包含 6 个完整部分：动机、要解决的问题、解决方案、方案理由、竞品分析、深层洞察",
+      "scoring_rules": {
+        "primary": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "HP-01-C1", "weight": 0.25, "description": "创建 Concept.md 文件", "pass_condition": "file_exists('Concept.md')" },
+            { "id": "HP-01-C2", "weight": 0.20, "description": "包含「动机」部分", "pass_condition": "contains_section('Concept.md', '动机')" },
+            { "id": "HP-01-C3", "weight": 0.15, "description": "包含「要解决的问题」部分", "pass_condition": "contains_section('Concept.md', '要解决的问题')" },
+            { "id": "HP-01-C4", "weight": 0.15, "description": "包含「解决方案」部分", "pass_condition": "contains_section('Concept.md', '解决方案')" },
+            { "id": "HP-01-C5", "weight": 0.10, "description": "包含「竞品分析」部分", "pass_condition": "contains_section('Concept.md', '竞品')" },
+            { "id": "HP-01-C6", "weight": 0.10, "description": "包含「深层洞察」部分", "pass_condition": "contains_section('Concept.md', '深层洞察')" },
+            { "id": "HP-01-C7", "weight": 0.05, "description": "末尾提示用户确认", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "HP-01-SM1", "description": "识别当前处于阶段一（无已有文档）", "pass_condition": "detects_stage(1)" }
+        ],
+        "guardrail": [
+          { "id": "HP-01-GR1", "description": "展示文档后请求用户确认，不自动进入下一阶段", "pass_condition": "requests_confirmation() && !auto_generates_next()" }
+        ]
+      }
+    },
+    {
+      "id": "HP-02",
+      "name": "概念到规划过渡（Concept → Plan）",
+      "category": "happy-path",
+      "description": "已有完整 Concept.md，用户要求生成 Plan.md，Agent 需做交叉校验",
+      "run_mode": "multi_turn",
+      "prompt": "这是我写的项目概念文档（在项目根目录的 Concept.md 里），我觉得差不多了，帮我推进到项目规划阶段，生成 Plan.md。",
+      "files": ["../../evals/files/handoff-concept.md"],
+      "dimension_weights": {
+        "task_success": 0.5,
+        "state_machine": 0.2,
+        "guardrail": 0.2,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "读取 Concept.md，交叉校验后创建 Plan.md，包含项目概述、产品形态、核心功能、页面结构、技术栈、设计规范",
+      "scoring_rules": {
+        "primary": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "HP-02-C1", "weight": 0.15, "description": "读取了 Concept.md", "pass_condition": "read_file('Concept.md')" },
+            { "id": "HP-02-C2", "weight": 0.15, "description": "创建了 Plan.md 文件", "pass_condition": "file_exists('Plan.md')" },
+            { "id": "HP-02-C3", "weight": 0.10, "description": "Plan.md 包含项目概述", "pass_condition": "contains_section('Plan.md', '项目概述|项目简介')" },
+            { "id": "HP-02-C4", "weight": 0.10, "description": "Plan.md 包含产品形态", "pass_condition": "contains_section('Plan.md', '产品形态')" },
+            { "id": "HP-02-C5", "weight": 0.10, "description": "Plan.md 包含核心功能", "pass_condition": "contains_section('Plan.md', '核心功能')" },
+            { "id": "HP-02-C6", "weight": 0.10, "description": "Plan.md 包含页面/界面结构", "pass_condition": "contains_section('Plan.md', '页面结构|界面结构')" },
+            { "id": "HP-02-C7", "weight": 0.10, "description": "Plan.md 包含技术栈", "pass_condition": "contains_section('Plan.md', '技术栈|技术选型')" },
+            { "id": "HP-02-C8", "weight": 0.10, "description": "Plan.md 与 Concept.md 内容一致（功能对应）", "pass_condition": "content_aligned('Plan.md', 'Concept.md')" },
+            { "id": "HP-02-C9", "weight": 0.10, "description": "末尾提示用户确认", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "HP-02-SM1", "description": "正确识别当前处于阶段二", "pass_condition": "detects_stage(2)" }
+        ],
+        "guardrail": [
+          { "id": "HP-02-GR1", "description": "展示 Plan.md 后请求确认，不自动进入阶段三", "pass_condition": "requests_confirmation() && !auto_generates_next()" },
+          { "id": "HP-02-GR2", "description": "对 Concept.md 进行了交叉校验", "pass_condition": "cross_validates('Concept.md')" }
+        ]
+      }
+    },
+    {
+      "id": "HP-03",
+      "name": "规划到实施拆分（Plan → Project）",
+      "category": "happy-path",
+      "description": "已有 Concept.md 和 Plan.md，用户要求生成 Project.md",
+      "run_mode": "multi_turn",
+      "prompt": "这是我已经确定的 Concept 和 Plan。请根据它们帮我生成实施计划（Project.md）。\n\nConcept 和 Plan 都在项目根目录，你直接读取使用。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.5,
+        "state_machine": 0.2,
+        "guardrail": 0.2,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "读取 Concept.md 和 Plan.md，生成 Project.md，包含分阶段实施计划和验收标准，覆盖所有核心功能",
+      "scoring_rules": {
+        "primary": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "HP-03-C1", "weight": 0.15, "description": "读取了 Concept.md 和 Plan.md", "pass_condition": "read_files(['Concept.md', 'Plan.md'])" },
+            { "id": "HP-03-C2", "weight": 0.20, "description": "创建了 Project.md 文件", "pass_condition": "file_exists('Project.md')" },
+            { "id": "HP-03-C3", "weight": 0.15, "description": "阶段划分与产品形态匹配（Web=4 阶段）", "pass_condition": "phase_count_matches('Web', 4)" },
+            { "id": "HP-03-C4", "weight": 0.15, "description": "覆盖 Plan.md 中所有核心功能", "pass_condition": "covers_all_features('Plan.md', 'Project.md')" },
+            { "id": "HP-03-C5", "weight": 0.15, "description": "每个阶段有明确的交付结果", "pass_condition": "each_phase_has('deliverable')" },
+            { "id": "HP-03-C6", "weight": 0.10, "description": "每个阶段有验收标准", "pass_condition": "each_phase_has('acceptance_criteria')" },
+            { "id": "HP-03-C7", "weight": 0.10, "description": "展示确认提示，等待用户确认", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "HP-03-SM1", "description": "正确识别当前处于阶段三", "pass_condition": "detects_stage(3)" }
+        ],
+        "guardrail": [
+          { "id": "HP-03-GR1", "description": "进行 Project→Plan 交叉校验", "pass_condition": "cross_validates('Plan.md')" }
+        ]
+      }
+    },
+    {
+      "id": "HP-04",
+      "name": "实施拆分到任务跟踪（Project → Task）",
+      "category": "happy-path",
+      "description": "已有 Concept.md、Plan.md、Project.md，用户要求生成 Task.md",
+      "run_mode": "multi_turn",
+      "prompt": "项目的概念、规划和实施计划都已经确定了，文档在项目根目录。请帮我创建任务跟踪文档（Task.md）来开始跟踪实现进度。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.5,
+        "state_machine": 0.2,
+        "guardrail": 0.2,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "读取所有现有文档，生成 Task.md，包含所有阶段的任务、状态标记和实施日志区域",
+      "scoring_rules": {
+        "primary": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "HP-04-C1", "weight": 0.15, "description": "读取了 Project.md", "pass_condition": "read_file('Project.md')" },
+            { "id": "HP-04-C2", "weight": 0.20, "description": "创建了 Task.md 文件", "pass_condition": "file_exists('Task.md')" },
+            { "id": "HP-04-C3", "weight": 0.15, "description": "Task.md 包含所有阶段和所有任务", "pass_condition": "covers_all_tasks('Project.md', 'Task.md')" },
+            { "id": "HP-04-C4", "weight": 0.15, "description": "任务使用 ⬜/🔄/✅ 状态标记", "pass_condition": "uses_status_markers()" },
+            { "id": "HP-04-C5", "weight": 0.15, "description": "每个任务有实施日志区域", "pass_condition": "each_task_has('log_section')" },
+            { "id": "HP-04-C6", "weight": 0.10, "description": "任务列表与 Project.md 阶段定义一致", "pass_condition": "tasks_match_phases('Project.md', 'Task.md')" },
+            { "id": "HP-04-C7", "weight": 0.10, "description": "展示确认提示，等待确认", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "HP-04-SM1", "description": "正确识别当前处于阶段四", "pass_condition": "detects_stage(4)" }
+        ],
+        "guardrail": [
+          { "id": "HP-04-GR1", "description": "进行 Task→Project 交叉校验", "pass_condition": "cross_validates('Project.md')" }
+        ]
+      }
+    },
+    {
+      "id": "HP-05",
+      "name": "项目总结生成（Summary.md）",
+      "category": "happy-path",
+      "description": "所有 6 个阶段均已完成，用户要求生成项目总结",
+      "run_mode": "multi_turn",
+      "prompt": "我的个人记账工具已经全部完成了，所有任务都标记为已完成。请帮我生成项目总结文档（Summary.md），记录完成情况、关键决策和经验总结。",
+      "files": [
+        "datasets/summary-ready-concept.md",
+        "datasets/summary-ready-plan.md",
+        "datasets/summary-ready-project.md",
+        "datasets/summary-ready-task.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.5,
+        "state_machine": 0.2,
+        "guardrail": 0.15,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.10
+      },
+      "expected_output": "读取所有文档，生成 Summary.md，包含完成情况、关键决策、经验总结",
+      "scoring_rules": {
+        "primary": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "HP-05-C1", "weight": 0.15, "description": "读取了 Task.md 确认所有任务完成状态", "pass_condition": "read_file('Task.md')" },
+            { "id": "HP-05-C2", "weight": 0.20, "description": "创建了 Summary.md 文件", "pass_condition": "file_exists('Summary.md')" },
+            { "id": "HP-05-C3", "weight": 0.15, "description": "Summary.md 包含完成情况部分", "pass_condition": "contains_section('Summary.md', '完成情况|项目完成')" },
+            { "id": "HP-05-C4", "weight": 0.15, "description": "Summary.md 包含关键决策记录", "pass_condition": "contains_section('Summary.md', '关键决策|决策记录')" },
+            { "id": "HP-05-C5", "weight": 0.15, "description": "Summary.md 包含经验总结", "pass_condition": "contains_section('Summary.md', '经验总结|教训|收获')" },
+            { "id": "HP-05-C6", "weight": 0.10, "description": "Summary.md 引用或汇总了各阶段产出", "pass_condition": "references_phases()" },
+            { "id": "HP-05-C7", "weight": 0.10, "description": "包含后续迭代建议或注意事项", "pass_condition": "contains_future_recommendations()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "HP-05-SM1", "description": "正确识别所有阶段已完成，进入阶段六", "pass_condition": "detects_stage(6)" }
+        ],
+        "guardrail": [
+          { "id": "HP-05-GR1", "description": "不在阶段六触发不必要的额外修改", "pass_condition": "does_not_modify_existing_docs()" }
+        ]
+      }
+    },
+
+    {
+      "id": "SM-01",
+      "name": "空白项目 → 阶段一",
+      "category": "state-machine",
+      "description": "项目根目录没有任何文档，Agent 应识别为阶段一开始",
+      "run_mode": "single_prompt",
+      "prompt": "帮我开始一个项目，我想做一个每日写作习惯追踪工具，每天记录写作字数、连续天数和主题。",
+      "files": [],
+      "dimension_weights": {
+        "task_success": 0.2,
+        "state_machine": 0.6,
+        "guardrail": 0.1,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到无已有文档，识别为阶段一，开始引导用户完成概念定义",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-01-S1", "weight": 0.30, "description": "检查了项目根目录文档状态", "pass_condition": "checks_project_root()" },
+            { "id": "SM-01-S2", "weight": 0.30, "description": "正确判断无已有文档", "pass_condition": "detects_no_docs()" },
+            { "id": "SM-01-S3", "weight": 0.25, "description": "正确识别当前阶段为阶段一", "pass_condition": "detects_stage(1)" },
+            { "id": "SM-01-S4", "weight": 0.15, "description": "开始引导用户回答 6 个问题", "pass_condition": "starts_concept_interview()" }
+          ]
+        },
+        "primary": [
+          { "id": "SM-01-P1", "description": "没有直接生成不完整的 Concept.md", "pass_condition": "!file_exists('Concept.md') || file_has_all_sections('Concept.md')" }
+        ]
+      }
+    },
+    {
+      "id": "SM-02",
+      "name": "仅 Concept.md 存在 → 阶段二",
+      "category": "state-machine",
+      "description": "只有 Concept.md 存在，Agent 应识别为阶段二，推进到 Plan.md",
+      "run_mode": "multi_turn",
+      "prompt": "概念文档已经有了，在项目根目录。帮我继续推进到项目规划阶段。",
+      "files": ["../../evals/files/handoff-concept.md"],
+      "dimension_weights": {
+        "task_success": 0.2,
+        "state_machine": 0.6,
+        "guardrail": 0.1,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到 Concept.md 存在、Plan.md 不存在，识别为阶段二，基于 Concept.md 创建 Plan.md",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-02-S1", "weight": 0.25, "description": "检测到 Concept.md 存在", "pass_condition": "detects_file('Concept.md')" },
+            { "id": "SM-02-S2", "weight": 0.25, "description": "检测到 Plan.md 不存在", "pass_condition": "detects_missing('Plan.md')" },
+            { "id": "SM-02-S3", "weight": 0.30, "description": "正确识别当前处于阶段二", "pass_condition": "detects_stage(2)" },
+            { "id": "SM-02-S4", "weight": 0.20, "description": "不做阶段一的工作（不重新创建 Concept.md）", "pass_condition": "does_not_recreate('Concept.md')" }
+          ]
+        },
+        "primary": [
+          { "id": "SM-02-P1", "description": "创建了 Plan.md", "pass_condition": "file_exists('Plan.md')" },
+          { "id": "SM-02-P2", "description": "Plan.md 内容与 Concept.md 一致", "pass_condition": "content_aligned('Plan.md', 'Concept.md')" }
+        ]
+      }
+    },
+    {
+      "id": "SM-03",
+      "name": "Concept+Plan 存在 → 阶段三",
+      "category": "state-machine",
+      "description": "Concept.md 和 Plan.md 存在，Agent 应识别为阶段三，推进到 Project.md",
+      "run_mode": "multi_turn",
+      "prompt": "我的知识库项目的概念和规划都已经确认了，文档在项目根目录。请继续推进到实施拆分阶段。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.2,
+        "state_machine": 0.6,
+        "guardrail": 0.1,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到 Concept.md 和 Plan.md 存在，Project.md 不存在，识别为阶段三，创建 Project.md",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-03-S1", "weight": 0.20, "description": "检测到 Concept.md 存在", "pass_condition": "detects_file('Concept.md')" },
+            { "id": "SM-03-S2", "weight": 0.20, "description": "检测到 Plan.md 存在", "pass_condition": "detects_file('Plan.md')" },
+            { "id": "SM-03-S3", "weight": 0.20, "description": "检测到 Project.md 不存在", "pass_condition": "detects_missing('Project.md')" },
+            { "id": "SM-03-S4", "weight": 0.25, "description": "正确识别当前处于阶段三", "pass_condition": "detects_stage(3)" },
+            { "id": "SM-03-S5", "weight": 0.15, "description": "不做阶段一/二的工作（不重新创建已有文档）", "pass_condition": "does_not_recreate_existing_docs()" }
+          ]
+        },
+        "primary": [
+          { "id": "SM-03-P1", "description": "创建了 Project.md", "pass_condition": "file_exists('Project.md')" },
+          { "id": "SM-03-P2", "description": "与 Plan.md 核心功能一一对应", "pass_condition": "covers_all_features('Plan.md', 'Project.md')" }
+        ]
+      }
+    },
+    {
+      "id": "SM-04",
+      "name": "Concept+Plan+Project 存在 → 阶段四",
+      "category": "state-machine",
+      "description": "前三份文档都存在，Agent 应识别为阶段四，推进到 Task.md",
+      "run_mode": "multi_turn",
+      "prompt": "项目的概念、规划和实施拆分都完成了，在项目根目录。请继续帮我创建任务跟踪文档。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.2,
+        "state_machine": 0.6,
+        "guardrail": 0.1,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到前三份文档存在、Task.md 不存在，识别为阶段四，创建 Task.md",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-04-S1", "weight": 0.20, "description": "检测到 Concept.md、Plan.md、Project.md 存在", "pass_condition": "detects_files(['Concept.md','Plan.md','Project.md'])" },
+            { "id": "SM-04-S2", "weight": 0.20, "description": "检测到 Task.md 不存在", "pass_condition": "detects_missing('Task.md')" },
+            { "id": "SM-04-S3", "weight": 0.30, "description": "正确识别当前处于阶段四", "pass_condition": "detects_stage(4)" },
+            { "id": "SM-04-S4", "weight": 0.15, "description": "不做前三个阶段的工作", "pass_condition": "does_not_recreate_existing_docs()" },
+            { "id": "SM-04-S5", "weight": 0.15, "description": "基于 Project.md 生成任务列表", "pass_condition": "tasks_match_phases('Project.md', 'Task.md')" }
+          ]
+        },
+        "primary": [
+          { "id": "SM-04-P1", "description": "创建了 Task.md", "pass_condition": "file_exists('Task.md')" }
+        ]
+      }
+    },
+    {
+      "id": "SM-05",
+      "name": "所有文档存在 → 阶段五",
+      "category": "state-machine",
+      "description": "所有四份核心文档存在，Agent 应识别为阶段五（实现执行）",
+      "run_mode": "multi_turn",
+      "prompt": "这个知识库项目的所有文档都准备好了，帮我看看当前进度然后继续推进。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md",
+        "../../evals/files/handoff-task.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.2,
+        "state_machine": 0.6,
+        "guardrail": 0.1,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到 Task.md 存在，确认已进入阶段五，根据 Task.md 状态确定进行中的子任务",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-05-S1", "weight": 0.20, "description": "检测到 Task.md 存在", "pass_condition": "detects_file('Task.md')" },
+            { "id": "SM-05-S2", "weight": 0.25, "description": "正确识别当前处于阶段五（实现执行）", "pass_condition": "detects_stage(5)" },
+            { "id": "SM-05-S3", "weight": 0.20, "description": "根据 Task.md 状态识别已完成和进行中的阶段", "pass_condition": "reads_task_status()" },
+            { "id": "SM-05-S4", "weight": 0.20, "description": "指出当前进行中的任务（Markdown 编辑器组件）", "pass_condition": "identifies_current_task('Markdown')" },
+            { "id": "SM-05-S5", "weight": 0.15, "description": "没有重复创建已有文档", "pass_condition": "does_not_recreate_existing_docs()" }
+          ]
+        },
+        "primary": [
+          { "id": "SM-05-P1", "description": "展示了当前任务状态", "pass_condition": "shows_task_status()" },
+          { "id": "SM-05-P2", "description": "提出了下一步行动建议", "pass_condition": "suggests_next_action()" }
+        ]
+      }
+    },
+    {
+      "id": "SM-06",
+      "name": "文档链断裂（Concept + Project，无 Plan）",
+      "category": "state-machine",
+      "description": "Concept.md 和 Project.md 存在但 Plan.md 缺失，Agent 应检测到文档链断裂",
+      "run_mode": "multi_turn",
+      "prompt": "我之前在做这个知识库项目，现在想继续。文档在项目根目录，你看看进度然后继续吧。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.7,
+        "guardrail": 0.1,
+        "recovery": 0.1,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "检测到 Concept.md 和 Project.md 存在但 Plan.md 缺失，报告文档链断裂并提出修复建议",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-06-S1", "weight": 0.15, "description": "发现 Concept.md 和 Project.md 都存在", "pass_condition": "detects_files(['Concept.md','Project.md'])" },
+            { "id": "SM-06-S2", "weight": 0.15, "description": "发现 Plan.md 不存在", "pass_condition": "detects_missing('Plan.md')" },
+            { "id": "SM-06-S3", "weight": 0.25, "description": "识别到文档链断裂（缺少中间文档）", "pass_condition": "detects_broken_chain()" },
+            { "id": "SM-06-S4", "weight": 0.20, "description": "向用户报告异常状态", "pass_condition": "reports_anomaly()" },
+            { "id": "SM-06-S5", "weight": 0.15, "description": "建议从缺失的 Plan.md 开始恢复", "pass_condition": "suggests_recovery_plan()" },
+            { "id": "SM-06-S6", "weight": 0.10, "description": "没有直接使用 Project.md 跳过 Plan.md", "pass_condition": "!skips_to_project()" }
+          ]
+        },
+        "recovery": [
+          { "id": "SM-06-R1", "description": "提出了合理的恢复方案", "pass_condition": "proposes_reasonable_recovery()" }
+        ]
+      }
+    },
+    {
+      "id": "SM-07",
+      "name": "大小写敏感检测（concept.md vs Concept.md）",
+      "category": "state-machine",
+      "description": "文档使用小写文件名 concept.md，Agent 是否能正确识别",
+      "run_mode": "multi_turn",
+      "prompt": "我之前写了一份概念文档，在项目根目录的 concept.md（小写）里。帮我看看现在的进度，然后继续推进。",
+      "files": ["../../evals/files/sample-concept.md"],
+      "rename_target": "concept.md",
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.7,
+        "guardrail": 0.1,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "Agent 能够找到 concept.md（小写），正确识别为概念文档并继续推进",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-07-S1", "weight": 0.25, "description": "搜索了项目根目录的文档", "pass_condition": "checks_project_root()" },
+            { "id": "SM-07-S2", "weight": 0.30, "description": "找到了小写的 concept.md 并识别为概念文档", "pass_condition": "detects_file('concept.md')" },
+            { "id": "SM-07-S3", "weight": 0.25, "description": "正确判断当前阶段（阶段二，有概念但无Plan）", "pass_condition": "detects_stage(2)" },
+            { "id": "SM-07-S4", "weight": 0.20, "description": "基于 concept.md 内容继续推进", "pass_condition": "uses_content('concept.md')" }
+          ]
+        },
+        "guardrail": [
+          { "id": "SM-07-G1", "description": "不会因为文件名不同而重新创建文档", "pass_condition": "!creates_duplicate_concept()" }
+        ]
+      }
+    },
+    {
+      "id": "SM-08",
+      "name": "过时文档检测（Concept 旧但 Project 新）",
+      "category": "state-machine",
+      "description": "Concept.md 是旧的版本，但 Project.md 是基于新需求重做的，Agent 应检测到不一致",
+      "run_mode": "multi_turn",
+      "prompt": "帮我看看这个项目的文档状态，检查一下有没有什么问题。文档都在项目根目录。",
+      "files": [
+        "datasets/outdated-concept.md",
+        "datasets/stale-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.6,
+        "guardrail": 0.2,
+        "recovery": 0.1,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "检测到 Concept.md 和 Project.md 之间存在版本/内容偏差，向用户报告并建议处理方案",
+      "scoring_rules": {
+        "state_machine": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "SM-08-S1", "weight": 0.20, "description": "读取了 Concept.md 和 Project.md", "pass_condition": "read_files(['Concept.md','Project.md'])" },
+            { "id": "SM-08-S2", "weight": 0.20, "description": "发现 Concept.md 和 Project.md 之间存在内容差异", "pass_condition": "detects_content_mismatch()" },
+            { "id": "SM-08-S3", "weight": 0.20, "description": "识别到概念阶段与实施计划阶段的技术方案不一致", "pass_condition": "detects_tech_stack_mismatch()" },
+            { "id": "SM-08-S4", "weight": 0.20, "description": "向用户报告具体的不一致内容", "pass_condition": "reports_specific_mismatches()" },
+            { "id": "SM-08-S5", "weight": 0.20, "description": "建议处理方案（更新 Concept.md 或在 Change.md 记录）", "pass_condition": "proposes_handling_plan()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "SM-08-G1", "description": "不做未经用户确认的修改", "pass_condition": "!modifies_without_confirmation()" }
+        ]
+      }
+    },
+
+    {
+      "id": "RC-01",
+      "name": "Agent 接力（阶段三中断恢复）",
+      "category": "recovery",
+      "description": "前一个 Agent 做到阶段三（实施拆分）后中断，新 Agent 需从阶段三继续",
+      "run_mode": "multi_turn",
+      "prompt": "我之前在做这个知识库项目，现在换你来接手。项目文档都在根目录，你看看现在的进度，然后帮我继续推进。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.3,
+        "guardrail": 0.1,
+        "recovery": 0.4,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "读取现有文档，正确识别当前处于阶段三（实施拆分），继续推进",
+      "scoring_rules": {
+        "recovery": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "RC-01-R1", "weight": 0.20, "description": "读取了所有现有文档", "pass_condition": "read_files(['Concept.md','Plan.md','Project.md'])" },
+            { "id": "RC-01-R2", "weight": 0.20, "description": "正确汇报了当前状态", "pass_condition": "reports_current_status()" },
+            { "id": "RC-01-R3", "weight": 0.20, "description": "正确识别 Project.md 已有内容", "pass_condition": "acknowledges_existing('Project.md')" },
+            { "id": "RC-01-R4", "weight": 0.20, "description": "没有重复创建已存在的文档", "pass_condition": "does_not_recreate_existing_docs()" },
+            { "id": "RC-01-R5", "weight": 0.10, "description": "继续推进当前阶段的任务", "pass_condition": "continues_current_phase()" },
+            { "id": "RC-01-R6", "weight": 0.10, "description": "展示了下一步行动和确认提示", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "RC-01-SM1", "description": "正确识别当前处于阶段三", "pass_condition": "detects_stage(3)" }
+        ]
+      }
+    },
+    {
+      "id": "RC-02",
+      "name": "Agent 接力（阶段五实现中恢复）",
+      "category": "recovery",
+      "description": "前一个 Agent 已进入阶段五实现阶段，新 Agent 需读取 Task.md 进度继续",
+      "run_mode": "multi_turn",
+      "prompt": "我之前在做这个知识库项目，已经完成了基础框架搭建，正在做文章管理模块。现在换你接手继续开发。项目文档和进度记录都在，你看看直接继续。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md",
+        "../../evals/files/handoff-task.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.2,
+        "guardrail": 0.1,
+        "recovery": 0.5,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "读取全部文档和 Task.md，确认阶段一已完成、阶段二进行中，继续推进文章管理任务",
+      "scoring_rules": {
+        "recovery": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "RC-02-R1", "weight": 0.15, "description": "读取了 Task.md 并正确理解任务完成状态", "pass_condition": "reads_task_status()" },
+            { "id": "RC-02-R2", "weight": 0.15, "description": "识别阶段一已全部完成", "pass_condition": "identifies_completed_phase(1)" },
+            { "id": "RC-02-R3", "weight": 0.15, "description": "识别阶段二中任务 1 进行中、其余未开始", "pass_condition": "identifies_in_progress_tasks()" },
+            { "id": "RC-02-R4", "weight": 0.15, "description": "没有重复创建已有文档", "pass_condition": "does_not_recreate_existing_docs()" },
+            { "id": "RC-02-R5", "weight": 0.15, "description": "继续推进当前进行中的任务", "pass_condition": "continues_in_progress_task()" },
+            { "id": "RC-02-R6", "weight": 0.15, "description": "在 Task.md 中追加实施日志（不覆盖已有内容）", "pass_condition": "appends_to_task_log()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "RC-02-SM1", "description": "正确识别当前处于阶段五", "pass_condition": "detects_stage(5)" }
+        ]
+      }
+    },
+    {
+      "id": "RC-03",
+      "name": "中间文档缺失恢复（缺 Plan.md）",
+      "category": "recovery",
+      "description": "用户说 Plan.md 被误删，Agent 需评估影响并给出恢复方案",
+      "run_mode": "multi_turn",
+      "prompt": "我有个知识库项目，之前概念和实施计划都做好了，但中间的 Plan 文档好像被我不小心删了。你帮我看看项目根目录里的文档，评估一下还能不能继续。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.2,
+        "guardrail": 0.1,
+        "recovery": 0.5,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到 Concept.md 和 Project.md 存在但 Plan.md 缺失，评估文档链断裂的影响，提出恢复方案",
+      "scoring_rules": {
+        "recovery": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "RC-03-R1", "weight": 0.15, "description": "读取了目录中的现有文件", "pass_condition": "checks_project_root()" },
+            { "id": "RC-03-R2", "weight": 0.15, "description": "发现 Concept.md 和 Project.md 都存在", "pass_condition": "detects_files(['Concept.md','Project.md'])" },
+            { "id": "RC-03-R3", "weight": 0.15, "description": "发现 Plan.md 缺失", "pass_condition": "detects_missing('Plan.md')" },
+            { "id": "RC-03-R4", "weight": 0.15, "description": "检测到文档链断裂", "pass_condition": "detects_broken_chain()" },
+            { "id": "RC-03-R5", "weight": 0.15, "description": "向用户报告具体缺失的文档及其影响", "pass_condition": "reports_missing_doc_impact('Plan.md')" },
+            { "id": "RC-03-R6", "weight": 0.15, "description": "提出恢复方案（重新创建 Plan.md 或确认后继续）", "pass_condition": "proposes_reasonable_recovery()" },
+            { "id": "RC-03-R7", "weight": 0.10, "description": "没有盲目跳过 Plan.md", "pass_condition": "!skips_to_project()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "RC-03-SM1", "description": "正确报告文档链断裂", "pass_condition": "detects_broken_chain()" }
+        ]
+      }
+    },
+    {
+      "id": "RC-04",
+      "name": "文档矛盾恢复（Concept vs Project 冲突）",
+      "category": "recovery",
+      "description": "Concept.md 和 Project.md 存在产品形态矛盾，Agent 应检测并给出修复建议",
+      "run_mode": "multi_turn",
+      "prompt": "我有个任务管理器项目，概念文档和实施计划都在项目根目录。帮我检查一下文档的一致性，看看有没有什么需要注意的问题。",
+      "files": [
+        "../../evals/files/conflict-concept.md",
+        "../../evals/files/conflict-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.2,
+        "recovery": 0.5,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到 Concept.md（Web 应用）和 Project.md（CLI 工具）之间的矛盾，报告冲突内容并提出修复建议",
+      "scoring_rules": {
+        "recovery": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "RC-04-R1", "weight": 0.15, "description": "读取了 Concept.md", "pass_condition": "read_file('Concept.md')" },
+            { "id": "RC-04-R2", "weight": 0.15, "description": "读取了 Project.md", "pass_condition": "read_file('Project.md')" },
+            { "id": "RC-04-R3", "weight": 0.15, "description": "发现 Concept.md 中产品形态为 Web 应用", "pass_condition": "identifies_concept_platform('Web')" },
+            { "id": "RC-04-R4", "weight": 0.15, "description": "发现 Project.md 中阶段划分为 CLI 工具", "pass_condition": "identifies_project_structure('CLI')" },
+            { "id": "RC-04-R5", "weight": 0.15, "description": "检测到产品形态的明显矛盾", "pass_condition": "detects_contradiction('product_type')" },
+            { "id": "RC-04-R6", "weight": 0.15, "description": "向用户报告具体的冲突内容", "pass_condition": "reports_specific_mismatches()" },
+            { "id": "RC-04-R7", "weight": 0.10, "description": "提出了统一的修复建议", "pass_condition": "proposes_resolution()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "RC-04-G1", "description": "没有盲目继续推进", "pass_condition": "!auto_proceeds()" }
+        ]
+      }
+    },
+    {
+      "id": "RC-05",
+      "name": "用户反悔回退",
+      "category": "recovery",
+      "description": "用户已完成阶段四，但想回到阶段二修改 Plan，Agent 需支持回退并做好版本管理",
+      "run_mode": "multi_turn",
+      "prompt": "我们之前做好的知识库项目，现在想想觉得技术方案选错了。原来是 Next.js API Routes 做的后端，我想改成 Express 独立后端。Project.md 和 Task.md 都已经生成了，但我想先从 Plan.md 改起。帮我把 Plan.md 里的技术栈更新一下。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md",
+        "../../evals/files/handoff-task.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.2,
+        "recovery": 0.5,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "支持用户回退修改 Plan.md，同时记录 Change.md，并提醒用户下游文档（Project.md、Task.md）可能需要联动更新",
+      "scoring_rules": {
+        "recovery": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "RC-05-R1", "weight": 0.15, "description": "接受用户回退修改 Plan.md 的请求", "pass_condition": "accepts_backtrack()" },
+            { "id": "RC-05-R2", "weight": 0.15, "description": "在修改前创建/更新 Change.md", "pass_condition": "records_change('Plan.md')" },
+            { "id": "RC-05-R3", "weight": 0.15, "description": "Change.md 包含修改时间、文档、内容和原因", "pass_condition": "change_log_is_complete()" },
+            { "id": "RC-05-R4", "weight": 0.15, "description": "正确修改了 Plan.md 的技术栈部分", "pass_condition": "modifies_correctly('Plan.md', 'Express')" },
+            { "id": "RC-05-R5", "weight": 0.15, "description": "提醒用户下游文档（Project.md、Task.md）可能需要联动更新", "pass_condition": "warns_downstream_impact()" },
+            { "id": "RC-05-R6", "weight": 0.15, "description": "展示了修改结果并请求确认", "pass_condition": "contains_confirmation_prompt()" },
+            { "id": "RC-05-R7", "weight": 0.10, "description": "没有直接修改除 Plan.md 以外的文档", "pass_condition": "only_modifies('Plan.md') || asks_before_other_changes()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "RC-05-G1", "description": "必须记录 Change.md", "pass_condition": "records_change('Plan.md')" }
+        ]
+      }
+    },
+
+    {
+      "id": "FL-01",
+      "name": "文档矛盾（产品形态不一致）",
+      "category": "failure",
+      "description": "Concept.md 说 Web 应用，Project.md 说 CLI 工具，Agent 应检测矛盾",
+      "prompt": "我有个项目，概念文档和实施计划都在项目根目录，你帮我看看有什么问题没有。",
+      "files": [
+        "../../evals/files/conflict-concept.md",
+        "../../evals/files/conflict-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.2,
+        "recovery": 0.1,
+        "failure": 0.5,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "检测到 Concept.md（Web 应用）和 Project.md（CLI 工具）之间的矛盾",
+      "scoring_rules": {
+        "failure": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "FL-01-F1", "weight": 0.20, "description": "读取了 Concept.md 和 Project.md", "pass_condition": "read_files(['Concept.md','Project.md'])" },
+            { "id": "FL-01-F2", "weight": 0.20, "description": "发现 Concept.md 中产品形态为 Web 应用", "pass_condition": "identifies_concept_platform('Web')" },
+            { "id": "FL-01-F3", "weight": 0.20, "description": "发现 Project.md 中阶段划分为 CLI 工具", "pass_condition": "identifies_project_structure('CLI')" },
+            { "id": "FL-01-F4", "weight": 0.20, "description": "检测到产品形态的明显矛盾", "pass_condition": "detects_contradiction('product_type')" },
+            { "id": "FL-01-F5", "weight": 0.10, "description": "向用户报告具体的冲突内容", "pass_condition": "reports_specific_mismatches()" },
+            { "id": "FL-01-F6", "weight": 0.10, "description": "没有盲目继续推进", "pass_condition": "!auto_proceeds()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "FL-01-G1", "description": "对矛盾提出修复建议或询问用户意向", "pass_condition": "proposes_resolution() || asks_user_preference()" }
+        ]
+      }
+    },
+    {
+      "id": "FL-02",
+      "name": "用户跳过全部阶段直接实现",
+      "category": "failure",
+      "description": "用户要求跳过文档流程直接写代码，Agent 应提示风险",
+      "prompt": "帮我建一个博客网站，直接用 Next.js 写代码就行，不用搞那些文档流程。",
+      "files": [],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.3,
+        "recovery": 0.0,
+        "failure": 0.5,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "响应用户需求但提示跳过多个阶段的潜在风险，记录跳过决策，征求用户确认",
+      "scoring_rules": {
+        "failure": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "FL-02-F1", "weight": 0.20, "description": "检测到用户试图跳过文档阶段直接实现", "pass_condition": "detects_skip_attempt()" },
+            { "id": "FL-02-F2", "weight": 0.20, "description": "提示跳过阶段的潜在风险（影响后续文档质量和可维护性）", "pass_condition": "warns_skip_risks()" },
+            { "id": "FL-02-F3", "weight": 0.20, "description": "征求用户确认是否继续跳过", "pass_condition": "asks_user_confirmation_skip()" },
+            { "id": "FL-02-F4", "weight": 0.20, "description": "如果用户坚持，不强制阻止", "pass_condition": "allows_proceed_if_insisted()" },
+            { "id": "FL-02-F5", "weight": 0.20, "description": "没有被用户的「不用搞文档流程」带偏——先评估再决定", "pass_condition": "evaluates_before_agreeing()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "FL-02-G1", "description": "不盲目同意跳过请求", "pass_condition": "!unconditionally_accepts_skip()" }
+        ]
+      }
+    },
+    {
+      "id": "FL-03",
+      "name": "不完整 Concept（缺失 >3 个部分）退回处理",
+      "category": "failure",
+      "description": "用户提供的 Concept.md 只完成了 2 个部分（缺失 4 个），Agent 应退回给用户",
+      "prompt": "这是我的健身打卡工具的概念文档，在项目根目录的 Concept.md 里。你帮我看看然后继续推进。",
+      "files": ["datasets/minimal-concept.md"],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.3,
+        "recovery": 0.0,
+        "failure": 0.5,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "发现 Concept.md 缺失 4 个部分（超过 3 个），退回给用户要求重新梳理概念",
+      "scoring_rules": {
+        "failure": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "FL-03-F1", "weight": 0.15, "description": "读取了 Concept.md", "pass_condition": "read_file('Concept.md')" },
+            { "id": "FL-03-F2", "weight": 0.15, "description": "识别到只完成了「动机」和「要解决的问题」2 部分", "pass_condition": "detects_incomplete_fields(2)" },
+            { "id": "FL-03-F3", "weight": 0.20, "description": "发现缺失 4 个部分（超过 3 个），判断为严重不完整", "pass_condition": "detects_critical_incompleteness()" },
+            { "id": "FL-03-F4", "weight": 0.20, "description": "将文档退回给用户，要求补充完整", "pass_condition": "returns_to_user()" },
+            { "id": "FL-03-F5", "weight": 0.15, "description": "明确指出缺失的部分", "pass_condition": "lists_missing_sections()" },
+            { "id": "FL-03-F6", "weight": 0.15, "description": "没有自行补充缺失内容（缺失 >3 时不自行补充）", "pass_condition": "!self_fills_content()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "FL-03-G1", "description": "对严重不完整的文档不自行处理，退回用户", "pass_condition": "returns_to_user()" }
+        ]
+      }
+    },
+    {
+      "id": "FL-04",
+      "name": "不支持的产品形态请求",
+      "category": "failure",
+      "description": "用户要求做原生 iOS 应用，不在 back-to-file 支持的产品形态列表中",
+      "prompt": "我想做一个原生的 iOS 健身追踪 App，用 SwiftUI，帮我从概念开始规划这个项目。",
+      "files": [],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.2,
+        "guardrail": 0.2,
+        "recovery": 0.0,
+        "failure": 0.5,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "检测到用户请求的产品形态（原生 iOS 应用）不在标准支持列表中，提示用户并给出替代方案",
+      "scoring_rules": {
+        "failure": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "FL-04-F1", "weight": 0.20, "description": "检测到用户要求的产品形态（原生 iOS）", "pass_condition": "detects_platform('iOS')" },
+            { "id": "FL-04-F2", "weight": 0.25, "description": "识别到该产品形态不在标准支持的产品列表中", "pass_condition": "detects_unsupported_platform()" },
+            { "id": "FL-04-F3", "weight": 0.25, "description": "提示用户该形态可能不适用标准模板", "pass_condition": "warns_platform_mismatch()" },
+            { "id": "FL-04-F4", "weight": 0.15, "description": "给出替代方案或调整建议（如 Web 版/Hybrid）", "pass_condition": "offers_alternative()" },
+            { "id": "FL-04-F5", "weight": 0.15, "description": "如果用户坚持，不强制阻止", "pass_condition": "allows_proceed_if_insisted()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "FL-04-G1", "description": "不盲目使用错误的产品形态模板", "pass_condition": "!uses_wrong_template()" }
+        ]
+      }
+    },
+    {
+      "id": "FL-05",
+      "name": "需求超出 Skill 范围",
+      "category": "failure",
+      "description": "用户请求不适用于项目管理流程的任务",
+      "prompt": "帮我写一个 Python 脚本，批量把文件夹里的图片压缩到 1MB 以下，不需要项目管理。",
+      "files": [],
+      "dimension_weights": {
+        "task_success": 0.0,
+        "state_machine": 0.0,
+        "guardrail": 0.2,
+        "recovery": 0.0,
+        "failure": 0.8,
+        "token_usage": 0.0,
+        "latency": 0.0
+      },
+      "expected_output": "识别到用户请求不适合 back-to-file 流程，提示用户并建议直接生成或不做流程化处理",
+      "scoring_rules": {
+        "failure": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "FL-05-F1", "weight": 0.25, "description": "识别到用户请求是单一脚本任务而非项目", "pass_condition": "detects_script_task()" },
+            { "id": "FL-05-F2", "weight": 0.25, "description": "没有将脚本任务强套到项目管理流程中", "pass_condition": "!forces_into_workflow()" },
+            { "id": "FL-05-F3", "weight": 0.25, "description": "提示用户该请求不适合 back-to-file 流程", "pass_condition": "warns_inapplicable()" },
+            { "id": "FL-05-F4", "weight": 0.25, "description": "建议直接生成脚本而非走项目流程", "pass_condition": "suggests_direct_generation()" }
+          ]
+        },
+        "guardrail": [
+          { "id": "FL-05-G1", "description": "不将 Skill 强制应用到不适用的场景", "pass_condition": "!forces_into_workflow()" }
+        ]
+      }
+    },
+
+    {
+      "id": "GR-01",
+      "name": "STOP 门：不自动进入下一阶段",
+      "category": "guardrail",
+      "description": "完成 Concept.md 后，Agent 不应自动进入 Plan 阶段，必须等待用户确认",
+      "prompt": "帮我开始一个个人记账项目。\n\n- **动机**：想搞清楚钱花在哪了\n- **要解决的问题**：记账太麻烦，坚持不下来\n- **解决方案**：极简网页记账工具，30 秒记一笔\n- **方案理由**：越简单越容易坚持\n- **竞品分析**：随手记/挖财功能太多广告太多\n- **深层洞察**：工具门槛不是功能不够而是记录成本太高",
+      "files": [],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.7,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "创建 Concept.md，展示给用户确认，不自动进入下一阶段",
+      "scoring_rules": {
+        "guardrail": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "GR-01-G1", "weight": 0.20, "description": "创建了 Concept.md", "pass_condition": "file_exists('Concept.md')" },
+            { "id": "GR-01-G2", "weight": 0.15, "description": "Concept.md 包含所有 6 个核心部分", "pass_condition": "file_has_all_sections('Concept.md')" },
+            { "id": "GR-01-G3", "weight": 0.10, "description": "Concept.md 包含待定信息部分", "pass_condition": "contains_section('Concept.md', '待定信息')" },
+            { "id": "GR-01-G4", "weight": 0.15, "description": "展示了 Concept.md 的内容给用户", "pass_condition": "shows_document()" },
+            { "id": "GR-01-G5", "weight": 0.20, "description": "请求用户确认是否满意", "pass_condition": "requests_confirmation()" },
+            { "id": "GR-01-G6", "weight": 0.10, "description": "提示用户「进入下一阶段」继续", "pass_condition": "prompts_next_stage()" },
+            { "id": "GR-01-G7", "weight": 0.10, "description": "没有自动生成 Plan.md", "pass_condition": "!auto_generates_next()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "GR-01-SM1", "description": "正确识别处于阶段一", "pass_condition": "detects_stage(1)" }
+        ]
+      }
+    },
+    {
+      "id": "GR-02",
+      "name": "Change.md 记录合规性",
+      "category": "guardrail",
+      "description": "修改已有文档时必须记录 Change.md",
+      "prompt": "我们之前规划好的知识库项目，现在需要改一下技术方案。原来打算用 Next.js API Routes 做后端，现在决定改为 Express 独立后端。项目文档在根目录，请帮我更新 Plan.md 中的技术栈部分。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md",
+        "../../evals/files/handoff-project.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.7,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "修改 Plan.md 的技术栈部分，同时在 Change.md 中记录变更原因",
+      "scoring_rules": {
+        "guardrail": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "GR-02-G1", "weight": 0.15, "description": "读取了现有的 Plan.md", "pass_condition": "read_file('Plan.md')" },
+            { "id": "GR-02-G2", "weight": 0.20, "description": "在修改 Plan.md 前先创建或更新 Change.md", "pass_condition": "records_change_before_edit()" },
+            { "id": "GR-02-G3", "weight": 0.15, "description": "Change.md 包含了修改时间", "pass_condition": "change_has('timestamp')" },
+            { "id": "GR-02-G4", "weight": 0.15, "description": "Change.md 包含了修改文档和修改内容", "pass_condition": "change_has('document_and_content')" },
+            { "id": "GR-02-G5", "weight": 0.15, "description": "Change.md 包含了修改原因", "pass_condition": "change_has('reason')" },
+            { "id": "GR-02-G6", "weight": 0.10, "description": "更新了 Plan.md 的技术栈部分（改为 Express）", "pass_condition": "modifies_correctly('Plan.md', 'Express')" },
+            { "id": "GR-02-G7", "weight": 0.10, "description": "展示了修改结果并请求确认", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "GR-03",
+      "name": "不完整文档审查护栏",
+      "category": "guardrail",
+      "description": "用户提交不完整的 Concept.md，Agent 应审查并补充，不能直接使用",
+      "prompt": "这是我写的项目概念文档，在项目根目录。你帮我看一下，然后继续推进到下一阶段。",
+      "files": ["../../evals/files/sample-concept.md"],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.7,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "审查 Concept.md，发现缺失竞品分析和深层洞察部分，补充后先展示确认再继续",
+      "scoring_rules": {
+        "guardrail": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "GR-03-G1", "weight": 0.15, "description": "读取了 Concept.md", "pass_condition": "read_file('Concept.md')" },
+            { "id": "GR-03-G2", "weight": 0.15, "description": "发现缺失竞品分析部分", "pass_condition": "detects_missing_section('竞品')" },
+            { "id": "GR-03-G3", "weight": 0.15, "description": "发现缺失深层洞察部分", "pass_condition": "detects_missing_section('深层洞察')" },
+            { "id": "GR-03-G4", "weight": 0.10, "description": "向用户指出不完整之处", "pass_condition": "reports_incompleteness()" },
+            { "id": "GR-03-G5", "weight": 0.15, "description": "补充了缺失的内容（缺 2 部分，自行补充）", "pass_condition": "fills_missing_content()" },
+            { "id": "GR-03-G6", "weight": 0.15, "description": "展示了补充后的完整 Concept.md", "pass_condition": "shows_updated_document()" },
+            { "id": "GR-03-G7", "weight": 0.15, "description": "请求用户确认后再进入下一阶段", "pass_condition": "requests_confirmation()" }
+          ]
+        },
+        "guardrail_note": "此场景缺 2 部分（≤3），Agent 应自行补充（与 FL-03 区分）"
+      }
+    },
+    {
+      "id": "GR-04",
+      "name": "阶段跳过检测护栏",
+      "category": "guardrail",
+      "description": "用户要求跳过已被识别为缺失的文档阶段，Agent 必须提示并确认",
+      "prompt": "概念已经有了，直接帮我生成 Task.md 开始跟踪任务吧。Plan.md 和 Project.md 的过程我省略了，直接到任务跟踪。",
+      "files": ["../../evals/files/handoff-concept.md"],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.2,
+        "guardrail": 0.6,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "检测到用户跳过阶段二和三，提示风险，征得用户确认后才能继续",
+      "scoring_rules": {
+        "guardrail": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "GR-04-G1", "weight": 0.20, "description": "检测到已存在的 Concept.md", "pass_condition": "detects_file('Concept.md')" },
+            { "id": "GR-04-G2", "weight": 0.20, "description": "检测到 Plan.md 和 Project.md 缺失", "pass_condition": "detects_missing_docs(['Plan.md','Project.md'])" },
+            { "id": "GR-04-G3", "weight": 0.20, "description": "识别到用户试图跳过多阶段", "pass_condition": "detects_multi_stage_skip()" },
+            { "id": "GR-04-G4", "weight": 0.15, "description": "提示跳过多个阶段的风险", "pass_condition": "warns_skip_risks()" },
+            { "id": "GR-04-G5", "weight": 0.15, "description": "征得用户确认后才能继续", "pass_condition": "asks_user_confirmation_skip()" }
+          ]
+        },
+        "state_machine": [
+          { "id": "GR-04-SM1", "description": "正确报告当前缺少 Plan.md 和 Project.md", "pass_condition": "detects_missing_docs(['Plan.md','Project.md'])" }
+        ]
+      }
+    },
+    {
+      "id": "GR-05",
+      "name": "跨阶段交叉校验护栏",
+      "category": "guardrail",
+      "description": "生成新文档时，Agent 必须对照前序文档做交叉校验",
+      "prompt": "我已经有 Concept 和 Plan 了，帮我直接生成 Project.md 吧。文档都在项目根目录。",
+      "files": [
+        "../../evals/files/handoff-concept.md",
+        "../../evals/files/handoff-plan.md"
+      ],
+      "dimension_weights": {
+        "task_success": 0.1,
+        "state_machine": 0.1,
+        "guardrail": 0.7,
+        "recovery": 0.0,
+        "token_usage": 0.05,
+        "latency": 0.05
+      },
+      "expected_output": "生成 Project.md 前先读取 Concept.md 和 Plan.md 做交叉校验，确保所有核心功能都被覆盖",
+      "scoring_rules": {
+        "guardrail": {
+          "type": "checklist",
+          "criteria": [
+            { "id": "GR-05-G1", "weight": 0.20, "description": "读取了 Concept.md", "pass_condition": "read_file('Concept.md')" },
+            { "id": "GR-05-G2", "weight": 0.20, "description": "读取了 Plan.md", "pass_condition": "read_file('Plan.md')" },
+            { "id": "GR-05-G3", "weight": 0.20, "description": "在生成 Project.md 前进行了交叉校验", "pass_condition": "cross_validates('Plan.md')" },
+            { "id": "GR-05-G4", "weight": 0.20, "description": "Project.md 覆盖了 Plan.md 中所有核心功能", "pass_condition": "covers_all_features('Plan.md', 'Project.md')" },
+            { "id": "GR-05-G5", "weight": 0.10, "description": "阶段划分与产品形态匹配", "pass_condition": "phase_count_matches('Web', 4)" },
+            { "id": "GR-05-G6", "weight": 0.10, "description": "展示了确认提示", "pass_condition": "contains_confirmation_prompt()" }
+          ]
+        }
+      }
+    }
+  ],
+
+  "report_dimensions": {
+    "overall": { "label": "综合得分", "weight": 1.0, "sub_dimensions": ["task_success", "state_machine", "guardrail", "recovery", "token_usage", "latency"] },
+    "by_category": "按场景类别聚合",
+    "by_scenario": "按单个场景得分"
+  },
+
+  "versions": {
+    "current": { "label": "当前版本", "description": "当前 SKILL.md 中的完整版本" },
+    "compressed": { "label": "压缩版", "description": "精简优化后的版本" },
+    "future": { "label": "后续版本", "description": "未来迭代版本" },
+    "no_skill": { "label": "不使用Skill", "description": "不使用 back-to-file Skill，直接通过对话完成任务" }
+  },
+
+  "coverage_analysis": {
+    "description": "覆盖率分析：对比 benchmark 场景覆盖的 SKILL.md 规则",
+    "source": "SKILL.md and references",
+    "total_rules_estimated": 50,
+    "methodology": "每个场景覆盖一个或多个规则，通过 benchmark.json 中的 scoring_rules 维度分析",
+    "output_template": "见 report-template.md 的「覆盖率分析」部分"
+  }
+}

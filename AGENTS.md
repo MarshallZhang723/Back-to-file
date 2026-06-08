@@ -1,46 +1,35 @@
-# back-to-file 项目流程管理
+# back-to-file
 
-通过文档驱动管理项目开发，每个阶段生成一份 Markdown 文档。不同 AI 编码助手可接力推进。
+本项目使用 back-to-file 工作流进行文档驱动开发。
 
-## 六阶段工作流
+## 执行前
 
-```
-Concept.md → Plan.md → Project.md → Task.md → 实际代码 → Summary.md
-```
+1. 阅读 SKILL.md — 了解完整工作流和阶段说明
+2. 检查项目根目录文档状态 → 判断当前阶段
+3. 根据当前阶段读取对应 reference
 
-### 阶段一：概念定义 → Concept.md
-引导用户回答 6 个问题后写入 Concept.md：
-1. **动机** — 为什么做这个项目？
-2. **问题** — 解决什么具体问题？
-3. **方案** — 用什么方式解决？
-4. **理由** — 为什么选这个方案？
-5. **竞品分析** — 已有方案的不足？
-6. **深层洞察** — 对需求的深入思考？
+## 阶段模板对照
 
-### 阶段二：项目规划 → Plan.md
-基于 Concept.md 生成完整规划。包含：产品形态、核心功能、页面结构、信息结构、技术栈、设计规范。
+| 阶段 | 产出文档 | 参考模板 |
+|------|---------|---------|
+| 一 | Concept.md | `references/concept-template.md` |
+| 二 | Plan.md | `references/plan-template.md` |
+| 三 | Project.md | `references/project-template.md` |
+| 四 | Task.md | `references/task-template.md` |
+| 五·前端 | Design.md | `references/design-template.md` |
+| 五·后端 | DataModel.md | `references/datamodel-template.md` |
+| 五·后端 | API.md | `references/api-template.md` |
+| 六 | Summary.md | `references/summary-template.md` |
 
-### 阶段三：实施拆分 → Project.md
-把规划拆成可执行的阶段和任务，每阶段有交付结果和验收标准。
+## 参考文件
 
-### 阶段四：任务跟踪 → Task.md
-跟踪实施进度，状态分 ⬜ 未开始 / 🔄 进行中 / ✅ 已完成。
-
-### 阶段五：实现执行
-按：**视觉Demo → 设计系统(Design.md) → 数据模型(DataModel.md) → API设计(API.md) → 业务逻辑 → 交互集成 → 部署**
-
-### 阶段六：项目总结 → Summary.md
-记录完成情况、关键决策和经验总结。
+- `references/workflow-rules.md` — 工作流概览、阶段切换规则、反例黑名单、文档速查
+- `references/validation-rules.md` — 阶段间对齐校验规则、预检清单
+- `references/change-management.md` — 变更管理规范（Change.md 格式）
+- `references/failure-handbook.md` — 故障处理、常见场景处理
 
 ## 核心规则
-- 每阶段完成后交叉校验对齐前序文档
-- 每次修改文档在 Change.md 追加记录（时间/内容/原因）
-- 每个任务完成后更新 Task.md 状态
-- 每阶段完成后更新 Project.md 进度
-- 提示用户确认后再进入下一阶段，不自动跳过
 
-## 产物文件
-项目根目录生成：Concept.md、Plan.md、Project.md、Task.md、Change.md、Summary.md、Design.md、DataModel.md、API.md
-
-## 触发此工作流
-当用户说：我想做个网站/帮我规划项目/开始一个新项目/梳理这个 idea/帮我拆分任务/管理开发进度
+- 每阶段完成 → 展示 → 交叉校验 → 请求用户确认 → 等待进入下一阶段
+- 修改文档必须在 Change.md 追加记录
+- 优先读取已有文档判断进度，从当前阶段继续
